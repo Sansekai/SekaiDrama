@@ -32,6 +32,11 @@ export default function DramaNovaDetailPage() {
   const firstEpisode = drama.episodes?.[0];
   const firstEpisodeId = firstEpisode?.id;
 
+  const rawPosterUrl = drama.posterImgUrl || drama.posterImg || "";
+  const finalPosterUrl = rawPosterUrl.includes(".heic") 
+    ? `https://wsrv.nl/?url=${encodeURIComponent(rawPosterUrl)}&output=jpg` 
+    : rawPosterUrl;
+
   return (
     <main className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -39,9 +44,7 @@ export default function DramaNovaDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={drama.posterImgUrl.includes(".heic") 
-              ? `https://wsrv.nl/?url=${encodeURIComponent(drama.posterImgUrl)}&output=jpg` 
-              : drama.posterImgUrl}
+            src={finalPosterUrl}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
             referrerPolicy="no-referrer"
@@ -61,9 +64,7 @@ export default function DramaNovaDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
             <div className="relative group">
               <img
-                src={drama.posterImgUrl.includes(".heic") 
-                  ? `https://wsrv.nl/?url=${encodeURIComponent(drama.posterImgUrl)}&output=jpg` 
-                  : drama.posterImgUrl}
+                src={finalPosterUrl}
                 alt={drama.title}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
                 referrerPolicy="no-referrer"
