@@ -37,7 +37,7 @@ export default function QrisDonationPopup() {
             Dukung Penambahan Platform Drama Lain!
           </h2>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
-            Donasi kamu sangat berarti untuk menambah platform drama lain dan membayar tagihan bulanan drama.sansekai.my.id agar tetap aktif.
+            Donasi kamu sangat berarti untuk menambah platform drama lain dan membayar tagihan bulanan <b>https://drama.sansekai.my.id (SekaiDrama)</b> agar tetap aktif.
           </p>
         </div>
 
