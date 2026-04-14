@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export type Platform = "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova";
+export type Platform = "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova" | "goodshort";
 
 export interface PlatformInfo {
   id: Platform;
@@ -55,6 +55,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/dramanova.png",
     apiBase: "/api/dramanova",
   },
+  {
+    id: "goodshort",
+    name: "GoodShort",
+    logo: "/goodshort.jpg",
+    apiBase: "/api/goodshort",
+  },
 ];
 
 interface PlatformState {
@@ -88,5 +94,6 @@ export function usePlatform() {
     isMelolo: currentPlatform === "melolo",
     isFreeReels: currentPlatform === "freereels",
     isDramaNova: currentPlatform === "dramanova",
+    isGoodShort: currentPlatform === "goodshort",
   };
 }

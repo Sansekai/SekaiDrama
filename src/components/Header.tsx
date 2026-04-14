@@ -12,6 +12,7 @@ import { useShortMaxSearch } from "@/hooks/useShortMax";
 import { useMeloloSearch } from "@/hooks/useMelolo";
 import { useFreeReelsSearch } from "@/hooks/useFreeReels";
 import { useDramaNovaSearch } from "@/hooks/useDramaNova";
+import { useGoodShortSearch } from "@/hooks/useGoodShort";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePathname } from "next/navigation";
@@ -24,7 +25,7 @@ export function Header() {
   const normalizedQuery = debouncedQuery.trim();
 
   // Platform context
-  const { isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, platformInfo } = usePlatform();
+  const { isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo } = usePlatform();
 
   // Search based on platform
   const { data: dramaBoxResults, isLoading: isSearchingDramaBox } = useSearchDramas(
@@ -51,6 +52,10 @@ export function Header() {
     isDramaNova ? normalizedQuery : ""
   );
 
+  const { data: goodShortResults, isLoading: isSearchingGoodShort } = useGoodShortSearch(
+    isGoodShort ? normalizedQuery : ""
+  );
+
   const isSearching = isDramaBox 
     ? isSearchingDramaBox 
     : isReelShort 
@@ -63,7 +68,9 @@ export function Header() {
               ? isSearchingMelolo
               : isFreeReels
                 ? isSearchingFreeReels
-                : isSearchingDramaNova;
+                : isDramaNova
+                  ? isSearchingDramaNova
+                  : isSearchingGoodShort;
 
   // Search results processing
   const searchResults = isDramaBox 
@@ -81,7 +88,9 @@ export function Header() {
               ? freeReelsResults
               : isDramaNova
                 ? dramaNovaResults
-                : [];
+                : isGoodShort
+                  ? goodShortResults
+                  : [];
 
   const handleSearchClose = () => {
     setSearchOpen(false);
@@ -455,6 +464,51 @@ export function Header() {
                                 </span>
                               ))}
                             </div>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* GoodShort Results */}
+                {isGoodShort && searchResults && searchResults.length > 0 && (
+                  <div className="grid gap-3">
+                    {searchResults.map((book: any, index: number) => (
+                      <Link
+                        key={book.bookId}
+                        href={`/detail/goodshort/${book.bookId}`}
+                        onClick={handleSearchClose}
+                        className="flex gap-4 p-4 rounded-2xl bg-card hover:bg-muted transition-all text-left animate-fade-up overflow-hidden"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <img
+                          src={book.cover}
+                          alt={book.bookName}
+                          className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display font-semibold text-foreground truncate">{book.bookName}</h3>
+                          {book.introduction && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                              {book.introduction}
+                            </p>
+                          )}
+                          {book.labels && book.labels.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {book.labels.slice(0, 3).map((tag: string, idx: number) => (
+                                <span key={idx} className="tag-pill text-[10px]">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {book.viewCountDisplay && (
+                            <span className="inline-block mt-2 text-[10px] text-muted-foreground">
+                              👁 {book.viewCountDisplay}
+                            </span>
                           )}
                         </div>
                       </Link>

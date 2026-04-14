@@ -201,6 +201,10 @@
   .animation-delay-300 {
     animation-delay: 300ms;
   }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
