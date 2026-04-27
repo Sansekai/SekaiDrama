@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Play } from "lucide-react";
+import { optimizeCover } from "@/lib/image-utils";
 
 export interface BadgeConfig {
   text: string;
@@ -50,9 +51,7 @@ export function UnifiedMediaCard({
       {/* Visual Container */}
       <div className="aspect-[2/3] relative overflow-hidden rounded-xl bg-muted/20">
         <img
-          src={cover.includes(".heic") 
-            ? `https://wsrv.nl/?url=${encodeURIComponent(cover)}&output=jpg` 
-            : cover}
+          src={optimizeCover(cover)}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"

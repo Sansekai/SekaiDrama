@@ -36,12 +36,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/netshort.webp",
     apiBase: "/api/netshort",
   },
-  {
-    id: "melolo",
-    name: "Melolo",
-    logo: "/melolo.webp",
-    apiBase: "/api/melolo",
-  },
+  // {
+  //   id: "melolo",
+  //   name: "Melolo",
+  //   logo: "/melolo.webp",
+  //   apiBase: "/api/melolo",
+  // },
 
   {
     id: "freereels",

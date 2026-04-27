@@ -7,6 +7,7 @@ import { Play, ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
+import { optimizeBg, optimizePoster } from "@/lib/image-utils";
 
 export default function NetShortDetailPage() {
   const params = useParams<{ shortPlayId: string }>();
@@ -39,7 +40,7 @@ export default function NetShortDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={data.cover}
+            src={optimizeBg(data.cover)}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
           />
@@ -60,7 +61,7 @@ export default function NetShortDetailPage() {
             {/* Cover */}
             <div className="relative group">
               <img
-                src={data.cover}
+                src={optimizePoster(data.cover)}
                 alt={data.title}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
               />

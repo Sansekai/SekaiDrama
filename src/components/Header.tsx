@@ -16,6 +16,7 @@ import { useGoodShortSearch } from "@/hooks/useGoodShort";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePathname } from "next/navigation";
+import { optimizeThumb } from "@/lib/image-utils";
 
 export function Header() {
   const pathname = usePathname();
@@ -183,7 +184,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={drama.cover}
+                          src={optimizeThumb(drama.cover)}
                           alt={drama.bookName}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -224,7 +225,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={book.book_pic}
+                          src={optimizeThumb(book.book_pic)}
                           alt={book.book_title}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -273,7 +274,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={drama.cover}
+                          src={optimizeThumb(drama.cover)}
                           alt={drama.title}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -318,7 +319,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={drama.cover}
+                          src={optimizeThumb(drama.cover)}
                           alt={drama.title}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -355,9 +356,7 @@ export function Header() {
                         <div className="w-16 h-24 bg-muted rounded-xl flex-shrink-0 overflow-hidden">
                           {book.thumb_url ? (
                             <img
-                              src={book.thumb_url.includes(".heic") 
-                                ? `https://wsrv.nl/?url=${encodeURIComponent(book.thumb_url)}&output=jpg` 
-                                : book.thumb_url}
+                              src={optimizeThumb(book.thumb_url)}
                               alt={book.book_name}
                               className="w-full h-full object-cover"
                               loading="lazy"
@@ -403,7 +402,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={book.cover}
+                          src={optimizeThumb(book.cover)}
                           alt={book.title}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -443,7 +442,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={drama.posterImgUrl}
+                          src={optimizeThumb(drama.posterImgUrl)}
                           alt={drama.title}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"
@@ -483,7 +482,7 @@ export function Header() {
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         <img
-                          src={book.cover}
+                          src={optimizeThumb(book.cover)}
                           alt={book.bookName}
                           className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
                           loading="lazy"

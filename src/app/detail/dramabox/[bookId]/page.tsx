@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import type { DramaDetailDirect, DramaDetailResponseLegacy } from "@/types/drama";
+import { optimizeBg, optimizePoster } from "@/lib/image-utils";
 
 // Helper to check if response is new format
 function isDirectFormat(data: unknown): data is DramaDetailDirect {
@@ -83,7 +84,7 @@ export default function DramaBoxDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={book.cover}
+            src={optimizeBg(book.cover)}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
           />
@@ -104,7 +105,7 @@ export default function DramaBoxDetailPage() {
             {/* Cover */}
             <div className="relative group">
               <img
-                src={book.cover}
+                src={optimizePoster(book.cover)}
                 alt={book.bookName}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
               />

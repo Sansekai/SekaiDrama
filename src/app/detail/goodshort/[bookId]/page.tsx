@@ -6,6 +6,7 @@ import { Play, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { optimizeBg, optimizePoster } from "@/lib/image-utils";
 
 export default function GoodShortDetailPage() {
   const params = useParams<{ bookId: string }>();
@@ -39,7 +40,7 @@ export default function GoodShortDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={coverUrl}
+            src={optimizeBg(coverUrl)}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
             referrerPolicy="no-referrer"
@@ -60,7 +61,7 @@ export default function GoodShortDetailPage() {
             {/* Poster with hover overlay */}
             <div className="relative group">
               <img
-                src={coverUrl}
+                src={optimizePoster(coverUrl)}
                 alt={book.bookName}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
                 referrerPolicy="no-referrer"

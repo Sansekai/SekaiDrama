@@ -7,6 +7,7 @@ import { Play, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UnifiedErrorDisplay } from "@/components/UnifiedErrorDisplay";
+import { optimizeBg, optimizePoster } from "@/lib/image-utils";
 
 export default function FreeReelsDetailPage() {
   const params = useParams();
@@ -45,7 +46,7 @@ export default function FreeReelsDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={drama.cover}
+            src={optimizeBg(drama.cover)}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
           />
@@ -66,7 +67,7 @@ export default function FreeReelsDetailPage() {
             {/* Cover */}
             <div className="relative group">
               <img
-                src={drama.cover}
+                src={optimizePoster(drama.cover)}
                 alt={drama.title}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
               />

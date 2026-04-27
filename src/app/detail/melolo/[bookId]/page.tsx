@@ -7,6 +7,7 @@ import { Play, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { optimizeBg, optimizePoster } from "@/lib/image-utils";
 
 export default function MeloloDetailPage() {
   const params = useParams<{ bookId: string }>();
@@ -40,9 +41,7 @@ export default function MeloloDetailPage() {
         {/* Background Blur */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={drama.series_cover.includes(".heic") 
-              ? `https://wsrv.nl/?url=${encodeURIComponent(drama.series_cover)}&output=jpg` 
-              : drama.series_cover}
+            src={optimizeBg(drama.series_cover)}
             alt=""
             className="w-full h-full object-cover opacity-20 blur-3xl scale-110"
             referrerPolicy="no-referrer"
@@ -62,9 +61,7 @@ export default function MeloloDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
             <div className="relative group">
               <img
-                src={drama.series_cover.includes(".heic") 
-                  ? `https://wsrv.nl/?url=${encodeURIComponent(drama.series_cover)}&output=jpg` 
-                  : drama.series_cover}
+                src={optimizePoster(drama.series_cover)}
                 alt={drama.series_title}
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
                 referrerPolicy="no-referrer"

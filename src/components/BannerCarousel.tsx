@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import type { ReelShortBanner } from "@/types/reelshort";
+import { optimizeBanner } from "@/lib/image-utils";
 
 interface BannerCarouselProps {
   banners: ReelShortBanner[];
@@ -46,7 +47,7 @@ export function BannerCarousel({
       {/* Banner Image */}
       <Link href={`/detail/reelshort/${currentBanner.jump_param.book_id}`}>
         <img
-          src={currentBanner.pic}
+          src={optimizeBanner(currentBanner.pic)}
           alt={currentBanner.jump_param.book_title}
           className="w-full h-full object-cover transition-transform duration-700"
         />
@@ -60,7 +61,7 @@ export function BannerCarousel({
           {/* Artistic Title */}
           {currentBanner.pic_artistic_word && (
             <img
-              src={currentBanner.pic_artistic_word}
+              src={optimizeBanner(currentBanner.pic_artistic_word)}
               alt=""
               className="h-12 md:h-16 object-contain"
             />
