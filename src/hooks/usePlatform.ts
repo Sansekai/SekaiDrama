@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export type Platform = "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova" | "goodshort";
+export type Platform = "pinedrama" | "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova" | "goodshort";
 
 export interface PlatformInfo {
   id: Platform;
@@ -12,6 +12,12 @@ export interface PlatformInfo {
 }
 
 export const PLATFORMS: PlatformInfo[] = [
+  {
+    id: "pinedrama",
+    name: "PineDrama",
+    logo: "/pinedrama.png",
+    apiBase: "/api/pinedrama",
+  },
   {
     id: "dramabox",
     name: "DramaBox",
@@ -69,7 +75,7 @@ interface PlatformState {
 }
 
 export const usePlatformStore = create<PlatformState>((set) => ({
-  currentPlatform: "dramabox",
+  currentPlatform: "pinedrama",
   setPlatform: (platform) => set({ currentPlatform: platform }),
 }));
 
@@ -87,6 +93,7 @@ export function usePlatform() {
     setPlatform,
     platforms: PLATFORMS,
     getPlatformInfo,
+    isPineDrama: currentPlatform === "pinedrama",
     isDramaBox: currentPlatform === "dramabox",
     isReelShort: currentPlatform === "reelshort",
     isShortMax: currentPlatform === "shortmax",

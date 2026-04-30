@@ -13,6 +13,7 @@ import { useMeloloSearch } from "@/hooks/useMelolo";
 import { useFreeReelsSearch } from "@/hooks/useFreeReels";
 import { useDramaNovaSearch } from "@/hooks/useDramaNova";
 import { useGoodShortSearch } from "@/hooks/useGoodShort";
+import { usePineDramaSearch } from "@/hooks/usePineDrama";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePathname } from "next/navigation";
@@ -26,7 +27,7 @@ export function Header() {
   const normalizedQuery = debouncedQuery.trim();
 
   // Platform context
-  const { isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo } = usePlatform();
+  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo } = usePlatform();
 
   // Search based on platform
   const { data: dramaBoxResults, isLoading: isSearchingDramaBox } = useSearchDramas(
@@ -57,41 +58,49 @@ export function Header() {
     isGoodShort ? normalizedQuery : ""
   );
 
-  const isSearching = isDramaBox 
-    ? isSearchingDramaBox 
-    : isReelShort 
-      ? isSearchingReelShort 
-      : isShortMax
-        ? isSearchingShortMax
-        : isNetShort 
-          ? isSearchingNetShort
-            : isMelolo
-              ? isSearchingMelolo
-              : isFreeReels
-                ? isSearchingFreeReels
-                : isDramaNova
-                  ? isSearchingDramaNova
-                  : isSearchingGoodShort;
+  const { data: pineDramaResults, isLoading: isSearchingPineDrama } = usePineDramaSearch(
+    isPineDrama ? normalizedQuery : ""
+  );
+
+  const isSearching = isPineDrama
+    ? isSearchingPineDrama
+    : isDramaBox 
+      ? isSearchingDramaBox 
+      : isReelShort 
+        ? isSearchingReelShort 
+        : isShortMax
+          ? isSearchingShortMax
+          : isNetShort 
+            ? isSearchingNetShort
+              : isMelolo
+                ? isSearchingMelolo
+                : isFreeReels
+                  ? isSearchingFreeReels
+                  : isDramaNova
+                    ? isSearchingDramaNova
+                    : isSearchingGoodShort;
 
   // Search results processing
-  const searchResults = isDramaBox 
-    ? dramaBoxResults 
-    : isReelShort 
-      ? reelShortResults?.data 
-      : isShortMax
-        ? shortMaxResults?.data
-        : isNetShort
-          ? netShortResults?.data
-          : isMelolo
-            ? meloloResults?.data?.search_data?.flatMap((item: any) => item.books || [])
-                .filter((book: any) => book.thumb_url && book.thumb_url !== "") || []
-            : isFreeReels
-              ? freeReelsResults
-              : isDramaNova
-                ? dramaNovaResults
-                : isGoodShort
-                  ? goodShortResults
-                  : [];
+  const searchResults = isPineDrama
+    ? pineDramaResults
+    : isDramaBox 
+      ? dramaBoxResults 
+      : isReelShort 
+        ? reelShortResults?.data 
+        : isShortMax
+          ? shortMaxResults?.data
+          : isNetShort
+            ? netShortResults?.data
+            : isMelolo
+              ? meloloResults?.data?.search_data?.flatMap((item: any) => item.books || [])
+                  .filter((book: any) => book.thumb_url && book.thumb_url !== "") || []
+              : isFreeReels
+                ? freeReelsResults
+                : isDramaNova
+                  ? dramaNovaResults
+                  : isGoodShort
+                    ? goodShortResults
+                    : [];
 
   const handleSearchClose = () => {
     setSearchOpen(false);
@@ -508,6 +517,46 @@ export function Header() {
                             <span className="inline-block mt-2 text-[10px] text-muted-foreground">
                               👁 {book.viewCountDisplay}
                             </span>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* PineDrama Results */}
+                {isPineDrama && searchResults && searchResults.length > 0 && (
+                  <div className="grid gap-3">
+                    {searchResults.map((drama: any, index: number) => (
+                      <Link
+                        key={drama.collection_id}
+                        href={`/detail/pinedrama/${drama.collection_id}`}
+                        onClick={handleSearchClose}
+                        className="flex gap-4 p-4 rounded-2xl bg-card hover:bg-muted transition-all text-left animate-fade-up overflow-hidden"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <img
+                          src={optimizeThumb(drama.cover)}
+                          alt={drama.title}
+                          className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display font-semibold text-foreground truncate">{drama.title}</h3>
+                          {drama.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                              {drama.description}
+                            </p>
+                          )}
+                          {drama.tags && drama.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {drama.tags.slice(0, 3).map((tag: string, idx: number) => (
+                                <span key={idx} className="tag-pill text-[10px]">
+                                  {tag.replace(/<\/?em>/g, "")}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </Link>

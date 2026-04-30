@@ -10,12 +10,13 @@ import { MeloloHome } from "@/components/MeloloHome";
 import { FreeReelsHome } from "@/components/FreeReelsHome";
 import { DramaNovaHome } from "@/components/DramaNovaHome";
 import { GoodShortHome } from "@/components/GoodShortHome";
+import { PineDramaHome } from "@/components/PineDramaHome";
 import { useLatestDramas, useTrendingDramas, useDubindoDramas } from "@/hooks/useDramas";
 import { usePlatform } from "@/hooks/usePlatform";
 import { InfiniteDramaSection } from "@/components/InfiniteDramaSection";
 
 export default function HomeContent() {
-  const { isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort } = usePlatform();
+  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort } = usePlatform();
 
   // Fetch data for all DramaBox sections
   // const { data: popularDramas, isLoading: loadingPopular, error: errorPopular, refetch: refetchPopular } = useForYouDramas(); // REMOVED as requested (replaced by infinite scroll)
@@ -31,6 +32,13 @@ export default function HomeContent() {
           <PlatformSelector />
         </div>
       </div>
+
+      {/* PineDrama Content */}
+      {isPineDrama && (
+        <div className="container mx-auto px-4 py-6 space-y-8">
+          <PineDramaHome />
+        </div>
+      )}
 
       {/* DramaBox Content - Multiple Sections */}
       {isDramaBox && (
