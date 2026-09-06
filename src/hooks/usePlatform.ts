@@ -36,6 +36,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/shortmax.webp",
     apiBase: "/api/shortmax",
   },
+  {
+    id: "goodshort",
+    name: "GoodShort",
+    logo: "/goodshort.jpg",
+    apiBase: "/api/goodshort",
+  },
   // [TEMPORARILY DISABLED] NetShort - Dinonaktifkan sementara karena ada update API dari pihak NetShort.
   // Platform ini tidak bisa digunakan sampai API baru sudah stabil dan disesuaikan.
   // TODO: Aktifkan kembali setelah API NetShort yang baru sudah compatible.
