@@ -23,11 +23,12 @@ export function Header() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [platformModalOpen, setPlatformModalOpen] = useState(false);
   const debouncedQuery = useDebounce(searchQuery, 300);
   const normalizedQuery = debouncedQuery.trim();
 
   // Platform context
-  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo } = usePlatform();
+  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo, platforms, setPlatform } = usePlatform();
 
   // Search based on platform
   const { data: dramaBoxResults, isLoading: isSearchingDramaBox } = useSearchDramas(
@@ -128,6 +129,25 @@ export function Header() {
 
           {/* Search Button Only - No Nav Links */}
           <div className="flex items-center gap-2">
+            {/* Platform Selector Button */}
+            <button
+              onClick={() => setPlatformModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 hover:bg-muted/80 transition-colors border border-border/50"
+            >
+              <div className="relative w-5 h-5 rounded-md overflow-hidden flex-shrink-0">
+                <Image
+                  src={platformInfo.logo}
+                  alt={platformInfo.name}
+                  fill
+                  className="object-cover"
+                  sizes="20px"
+                />
+              </div>
+              <span className="font-medium text-xs sm:text-sm text-foreground whitespace-nowrap">
+                {platformInfo.name}
+              </span>
+            </button>
+
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
@@ -576,6 +596,83 @@ export function Header() {
                     <p className="text-muted-foreground">Ketik untuk mencari drama di {platformInfo.name}</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      {/* Platform Selector Modal (Portal) */}
+      {platformModalOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setPlatformModalOpen(false)}>
+            <div
+              className="bg-card rounded-2xl shadow-2xl border border-border w-full max-w-lg max-h-[80vh] overflow-y-auto animate-fade-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card rounded-t-2xl z-10">
+                <h2 className="font-display font-bold text-lg text-foreground">Pilih Platform</h2>
+                <button
+                  onClick={() => setPlatformModalOpen(false)}
+                  className="p-2 rounded-xl hover:bg-muted/50 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Platform Grid */}
+              <div className="p-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  {platforms.map((platform) => (
+                    <button
+                      key={platform.id}
+                      onClick={() => {
+                        setPlatform(platform.id);
+                        setPlatformModalOpen(false);
+                      }}
+                      className={`
+                        flex flex-col items-center gap-2 p-3 rounded-xl transition-all
+                        ${platformInfo.id === platform.id
+                          ? "bg-primary/15 ring-2 ring-primary shadow-md"
+                          : "hover:bg-muted/50"
+                        }
+                      `}
+                    >
+                      <div className="relative w-12 h-12 rounded-xl overflow-hidden shadow-sm bg-muted/30">
+                        <Image
+                          src={platform.logo}
+                          alt={platform.name}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      </div>
+                      <span className={`text-xs font-medium text-center leading-tight line-clamp-1 ${
+                        platformInfo.id === platform.id ? "text-primary" : "text-muted-foreground"
+                      }`}>
+                        {platform.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer — current platform */}
+              <div className="p-4 border-t border-border flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{platforms.length} platform tersedia</span>
+                <div className="flex items-center gap-2">
+                  <div className="relative w-5 h-5 rounded-md overflow-hidden">
+                    <Image
+                      src={platformInfo.logo}
+                      alt={platformInfo.name}
+                      fill
+                      className="object-cover"
+                      sizes="20px"
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{platformInfo.name}</span>
+                </div>
               </div>
             </div>
           </div>,

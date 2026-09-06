@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${UPSTREAM_API}/allepisode?shortPlayId=${shortPlayId}`, {
-      cache: 'no-store',});
+    // Updated: use /detail endpoint instead of /allepisode (API update 2026-09)
+    const response = await fetch(`${UPSTREAM_API}/detail?shortPlayId=${shortPlayId}`, {
+      cache: 'no-store',
+    });
 
     if (!response.ok) {
       return encryptedResponse(
@@ -26,16 +28,14 @@ export async function GET(request: NextRequest) {
 
     const data = await safeJson<any>(response);
 
-    // Normalize episode data
+    // Normalize episode data — streaming data (playVoucher, subtitleList) is now
+    // fetched separately via /api/netshort/episode endpoint
     const episodes = (data.shortPlayEpisodeInfos || []).map((ep: any) => ({
       episodeId: ep.episodeId,
       episodeNo: ep.episodeNo,
       cover: ep.episodeCover,
-      videoUrl: ep.playVoucher,
-      quality: ep.playClarity || "720p",
       isLock: ep.isLock,
       likeNums: ep.likeNums,
-      subtitleUrl: ep.subtitleList?.[0]?.url || "",
     }));
 
     return encryptedResponse({
@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       totalEpisodes: data.totalEpisode,
       isFinish: data.isFinish === 1,
       payPoint: data.payPoint,
+      heatScore: data.formatHeatScore || "",
       episodes,
     });
   } catch (error) {
@@ -58,5 +59,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-

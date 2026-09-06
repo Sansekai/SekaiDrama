@@ -42,15 +42,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/goodshort.jpg",
     apiBase: "/api/goodshort",
   },
-  // [TEMPORARILY DISABLED] NetShort - Dinonaktifkan sementara karena ada update API dari pihak NetShort.
-  // Platform ini tidak bisa digunakan sampai API baru sudah stabil dan disesuaikan.
-  // TODO: Aktifkan kembali setelah API NetShort yang baru sudah compatible.
-  // {
-  //   id: "netshort",
-  //   name: "NetShort",
-  //   logo: "/netshort.webp",
-  //   apiBase: "/api/netshort",
-  // },
+  {
+    id: "netshort",
+    name: "NetShort",
+    logo: "/netshort.webp",
+    apiBase: "/api/netshort",
+  },
 
   {
     id: "melolo",

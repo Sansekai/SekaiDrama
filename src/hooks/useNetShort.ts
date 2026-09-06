@@ -41,11 +41,8 @@ interface NetShortEpisode {
   episodeId: string;
   episodeNo: number;
   cover: string;
-  videoUrl: string;
-  quality: string;
   isLock: boolean;
   likeNums: string;
-  subtitleUrl?: string;
 }
 
 interface DetailResponse {
@@ -59,12 +56,30 @@ interface DetailResponse {
   totalEpisodes: number;
   isFinish: boolean;
   payPoint: number;
+  heatScore: string;
   episodes: NetShortEpisode[];
 }
 
-import { fetchJson } from "@/lib/fetcher";
+// Response from the separate episode endpoint (streaming data)
+interface NetShortEpisodeStreamData {
+  episodeId: string;
+  episodeNo: number;
+  videoUrl: string | null;
+  quality: string;
+  sdkVid: string | null;
+  subtitleUrl: string | null;
+  subtitleLanguage: string | null;
+  unlockType: number | null;
+}
 
-// ... existing interfaces
+interface EpisodeResponse {
+  success: boolean;
+  shortPlayId: string;
+  episode: NetShortEpisodeStreamData;
+  isMember: number;
+}
+
+import { fetchJson } from "@/lib/fetcher";
 
 export function useNetShortTheaters() {
   return useQuery<TheatersResponse>({
@@ -114,4 +129,17 @@ export function useNetShortDetail(shortPlayId: string) {
   });
 }
 
-export type { NetShortDrama, NetShortGroup, NetShortEpisode, DetailResponse };
+// Fetch streaming data for a single episode (video URL, subtitles)
+// This is called on-demand when the user watches an episode
+export function useNetShortEpisode(shortPlayId: string, episodeNumber: number) {
+  return useQuery<EpisodeResponse>({
+    queryKey: ["netshort", "episode", shortPlayId, episodeNumber],
+    queryFn: () => fetchJson<EpisodeResponse>(
+      `/api/netshort/episode?shortPlayId=${shortPlayId}&episodeNumber=${episodeNumber}`
+    ),
+    enabled: !!shortPlayId && episodeNumber > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export type { NetShortDrama, NetShortGroup, NetShortEpisode, DetailResponse, EpisodeResponse, NetShortEpisodeStreamData };

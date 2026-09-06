@@ -1,6 +1,6 @@
 "use client";
 
-import { PlatformSelector } from "@/components/PlatformSelector";
+
 import { DramaSection } from "@/components/DramaSection";
 import { ReelShortSection } from "@/components/ReelShortSection";
 import { ShortMaxHome } from "@/components/ShortMaxHome";
@@ -26,12 +26,6 @@ export default function HomeContent() {
 
   return (
     <main className="min-h-screen pt-16">
-      {/* Platform Selector */}
-      <div className="glass-strong sticky top-16 z-40">
-        <div className="container mx-auto">
-          <PlatformSelector />
-        </div>
-      </div>
 
       {/* PineDrama Content */}
       {isPineDrama && (

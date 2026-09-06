@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNetShortDetail } from "@/hooks/useNetShort";
+import { useNetShortDetail, useNetShortEpisode } from "@/hooks/useNetShort";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle, List } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
@@ -17,13 +17,6 @@ export default function NetShortWatchPage() {
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
-  
-  // Debug log state (kept internal for now, can be exposed if needed)
-  const [debugLog, setDebugLog] = useState<string[]>([]);
-  const addLog = (msg: string) => {
-    console.log(msg);
-    // setDebugLog(prev => [...prev.slice(-4), msg]); 
-  };
 
   // Get episode from URL
   useEffect(() => {
@@ -33,33 +26,36 @@ export default function NetShortWatchPage() {
     }
   }, [searchParams]);
 
-  // Fetch detail with all episodes
-  const { data, isLoading, error } = useNetShortDetail(shortPlayId || "");
+  // Fetch detail for metadata (title, totalEpisodes, episode list for drawer)
+  const { data: detailData, isLoading: detailLoading } = useNetShortDetail(shortPlayId || "");
 
-  // Get current episode data
-  const currentEpisodeData = data?.episodes?.find(
-    (ep) => ep.episodeNo === currentEpisode
+  // Fetch episode streaming data on-demand (video URL, subtitles)
+  const { data: episodeData, isLoading: episodeLoading, error: episodeError } = useNetShortEpisode(
+    shortPlayId || "",
+    currentEpisode
   );
+
+  const totalEpisodes = detailData?.totalEpisodes || 1;
+  const title = detailData?.title || "Loading...";
+  const isLoading = detailLoading || episodeLoading;
+  const error = episodeError;
+
+  // Get video URL from episode data
+  const videoUrl = episodeData?.episode?.videoUrl || null;
 
   // Handle video ended - auto next episode
   const handleVideoEnded = useCallback(() => {
-    if (!data?.episodes) return;
     const nextEp = currentEpisode + 1;
-    const nextEpisodeData = data.episodes.find((ep) => ep.episodeNo === nextEp);
-    
-    if (nextEpisodeData) {
+    if (nextEp <= totalEpisodes) {
       setCurrentEpisode(nextEp);
       window.history.replaceState(null, '', `/watch/netshort/${shortPlayId}?ep=${nextEp}`);
     }
-  }, [currentEpisode, data?.episodes, shortPlayId]);
+  }, [currentEpisode, totalEpisodes, shortPlayId]);
 
   // Load video with fallback support for MP4/HLS
   useEffect(() => {
-    if (currentEpisodeData?.videoUrl && videoRef.current) {
+    if (videoUrl && videoRef.current) {
         const video = videoRef.current;
-        const videoUrl = currentEpisodeData.videoUrl;
-
-        addLog(`Loading video: ${videoUrl}`);
 
         // Clean up previous HLS instance
         if (hlsRef.current) {
@@ -72,7 +68,6 @@ export default function NetShortWatchPage() {
 
         // Priority 1: HLS.js for .m3u8 (if supported)
         if (isHlsUrl && Hls.isSupported()) {
-            addLog("Detected HLS stream, initializing HLS.js...");
             const hls = new Hls({
                 debug: false,
                 enableWorker: true,
@@ -86,31 +81,26 @@ export default function NetShortWatchPage() {
             hls.attachMedia(video);
             
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                addLog("Manifest parsed, playing...");
-                video.play().catch((e) => addLog(`Auto-play failed: ${e.message}`));
+                video.play().catch((e) => console.log(`Auto-play failed: ${e.message}`));
             });
 
             hls.on(Hls.Events.ERROR, (event, data) => {
-                const errorMsg = `HLS Error: ${data.type} - ${data.details}`;
-                console.error(errorMsg);
+                console.error(`HLS Error: ${data.type} - ${data.details}`);
                 
                 if (data.fatal) {
-                   // ... error handling
-                   // If HLS fails fatally, we could try native as last ditch, but usually fatal means fatal.
                    hls.destroy();
                 }
             });
         } 
         // Priority 2: Native playback (MP4 or Native HLS on Safari)
         else {
-             addLog(isMp4Url ? "Detected MP4/Native stream" : "Unknown format, trying native playback");
              video.src = videoUrl;
-             video.load(); // Ensure source update
+             video.load();
              
              const playPromise = video.play();
              if (playPromise !== undefined) {
                 playPromise.catch((e) => {
-                    addLog(`Native play failed: ${e.message}`);
+                    console.log(`Native play failed: ${e.message}`);
                 });
              }
         }
@@ -122,7 +112,7 @@ export default function NetShortWatchPage() {
             hlsRef.current = null;
         }
     };
-  }, [currentEpisodeData?.videoUrl]);
+  }, [videoUrl]);
 
   const goToEpisode = (ep: number) => {
     setCurrentEpisode(ep);
@@ -130,27 +120,28 @@ export default function NetShortWatchPage() {
     setShowEpisodeList(false);
   };
 
-  const totalEpisodes = data?.totalEpisodes || 1;
-
   // Manual Subtitle Injection & Enforcement
+  // subtitleUrl comes from the episode endpoint and can be null
+  const subtitleUrl = episodeData?.episode?.subtitleUrl || "";
+
   useEffect(() => {
       const video = videoRef.current;
       if (!video) return;
 
-      const subtitleUrl = currentEpisodeData?.subtitleUrl 
-          ? `/api/proxy/video?url=${encodeURIComponent(currentEpisodeData.subtitleUrl)}`
+      const proxiedSubtitleUrl = subtitleUrl
+          ? `/api/proxy/video?url=${encodeURIComponent(subtitleUrl)}`
           : "";
 
       // Helper to inject track safely
       const injectTrack = () => {
-          if (!subtitleUrl) return;
+          if (!proxiedSubtitleUrl) return;
 
           // Check if already exists
           const tracks = Array.from(video.getElementsByTagName('track'));
           const existing = tracks.find(t => t.label === 'Indonesia' && t.srclang === 'id');
           
           if (existing) {
-             if (existing.src === subtitleUrl) {
+             if (existing.src === proxiedSubtitleUrl) {
                  return; // Already has correct track
              } else {
                  video.removeChild(existing);
@@ -162,7 +153,7 @@ export default function NetShortWatchPage() {
           track.label = 'Indonesia';
           track.srclang = 'id';
           track.default = true;
-          track.src = subtitleUrl;
+          track.src = proxiedSubtitleUrl;
           
           track.onload = () => {
               if (track.track) track.track.mode = 'showing';
@@ -219,11 +210,11 @@ export default function NetShortWatchPage() {
           
           try {
              const tracks = Array.from(video.getElementsByTagName('track'));
-             const current = tracks.find(t => t.src === subtitleUrl);
+             const current = tracks.find(t => t.src === proxiedSubtitleUrl);
              if (current) video.removeChild(current);
           } catch(e) {}
       };
-  }, [currentEpisodeData?.subtitleUrl]); // Run when subtitle URL changes
+  }, [subtitleUrl]); // Run when subtitle URL changes
 
   return (
     <main className="fixed inset-0 bg-black flex flex-col">
@@ -242,7 +233,7 @@ export default function NetShortWatchPage() {
           
           <div className="text-center flex-1 px-4 min-w-0">
             <h1 className="text-white font-medium truncate text-sm sm:text-base drop-shadow-md">
-              {data?.title || "Loading..."}
+              {title}
             </h1>
             <p className="text-white/80 text-xs drop-shadow-md">Episode {currentEpisode}</p>
           </div>
@@ -316,8 +307,6 @@ export default function NetShortWatchPage() {
          </div>
       </div>
 
-
-
       {/* Episode List Sidebar */}
       {showEpisodeList && (
         <>
@@ -341,7 +330,7 @@ export default function NetShortWatchPage() {
               </button>
             </div>
             <div className="p-3 grid grid-cols-5 gap-2">
-              {data?.episodes?.map((episode) => (
+              {detailData?.episodes?.map((episode) => (
                 <button
                   key={episode.episodeId}
                   onClick={() => goToEpisode(episode.episodeNo)}

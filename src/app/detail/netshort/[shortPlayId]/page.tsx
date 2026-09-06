@@ -2,7 +2,6 @@
 
 import { UnifiedErrorDisplay } from "@/components/UnifiedErrorDisplay";
 import { useNetShortDetail } from "@/hooks/useNetShort";
-import { useQuery } from "@tanstack/react-query";
 import { Play, ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";

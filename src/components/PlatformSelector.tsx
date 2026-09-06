@@ -83,8 +83,8 @@ export function PlatformSelector() {
         )}
       </div>
 
-      {/* Desktop: Horizontal tabs */}
-      <div className="hidden md:flex items-center gap-3">
+      {/* Desktop: Horizontal scrollable tabs */}
+      <div className="hidden md:flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1">
         {platforms.map((platform) => (
           <PlatformButton
             key={platform.id}
@@ -110,7 +110,7 @@ function PlatformButton({ platform, isActive, onClick }: PlatformButtonProps) {
       onClick={onClick}
       className={`
         relative flex items-center gap-2 px-4 py-2.5 rounded-full
-        transition-all duration-300 ease-out
+        transition-all duration-300 ease-out flex-shrink-0
         ${
           isActive
             ? "bg-primary/20 ring-2 ring-primary shadow-lg shadow-primary/20"
