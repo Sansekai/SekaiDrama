@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${UPSTREAM_API}/episode?shortPlayId=${shortPlayId}&episodeNumber=${episodeNumber}`,
+      `${UPSTREAM_API}/get-episode?shortPlayId=${shortPlayId}&episodeNumber=${episodeNumber}`,
       { cache: 'no-store' }
     );
 

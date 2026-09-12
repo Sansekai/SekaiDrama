@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 
 interface VideoQuality {
@@ -28,19 +29,20 @@ export default function GoodShortWatchPage() {
   const [selectedQuality, setSelectedQuality] = useState<VideoQuality | null>(null);
   const [hlsReady, setHlsReady] = useState(false);
 
-  // Episode index from URL (1-based in URL, 0-based internally)
+  // params.episodeIndex is now a random token
+  const [currentToken, setCurrentToken] = useState(params.episodeIndex || "");
+  const session = getWatchSession(currentToken);
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(() => {
-    const idx = parseInt(params.episodeIndex || "1", 10) - 1;
-    return isNaN(idx) ? 0 : Math.max(0, idx);
+    const idx = (session?.episodeIndex || 1) - 1; // session stores 1-based, internal is 0-based
+    return Math.max(0, idx);
   });
 
-  // Sync with URL params
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    const idx = parseInt(params.episodeIndex || "1", 10) - 1;
-    if (!isNaN(idx) && idx !== currentEpisodeIndex) {
-      setCurrentEpisodeIndex(Math.max(0, idx));
+    if (!session && params.episodeIndex) {
+      router.replace(`/detail/goodshort/${params.bookId}`);
     }
-  }, [params.episodeIndex]);
+  }, [session, params.episodeIndex, params.bookId, router]);
 
   // Fetch all episodes
   const { data: episodeData, isLoading: episodesLoading } = useGoodShortEpisodes(params.bookId || "");
@@ -153,8 +155,9 @@ export default function GoodShortWatchPage() {
 
     setCurrentEpisodeIndex(index);
 
-    // Update URL without full navigation
-    const newUrl = `/watch/goodshort/${params.bookId}/${index + 1}`;
+    const newToken = updateWatchSession(currentToken, { episodeIndex: index + 1 });
+    setCurrentToken(newToken);
+    const newUrl = `/watch/goodshort/${params.bookId}/${newToken}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
 
     setShowEpisodeList(false);

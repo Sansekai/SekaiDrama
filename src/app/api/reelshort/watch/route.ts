@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${UPSTREAM_API}/episode?bookId=${encodeURIComponent(bookId)}&episodeNumber=${encodeURIComponent(episodeNumber)}`,
+      `${UPSTREAM_API}/get-episode?bookId=${encodeURIComponent(bookId)}&episodeNumber=${encodeURIComponent(episodeNumber)}`,
       {
         cache: 'no-store',
       }

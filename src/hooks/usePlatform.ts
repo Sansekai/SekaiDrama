@@ -62,12 +62,13 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/freereels.webp",
     apiBase: "/api/freereels",
   },
-  {
-    id: "dramanova",
-    name: "DramaNova",
-    logo: "/dramanova.png",
-    apiBase: "/api/dramanova",
-  },
+  // api lagi error - 12-09-2026
+  // {
+  //   id: "dramanova",
+  //   name: "DramaNova",
+  //   logo: "/dramanova.png",
+  //   apiBase: "/api/dramanova",
+  // },
   // [TEMPORARILY DISABLED] GoodShort - Dinonaktifkan sementara.
   // {
   //   id: "goodshort",

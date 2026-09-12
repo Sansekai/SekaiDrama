@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Loader2, AlertCircle, List } from "lucide-re
 import Link from "next/link";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Hls from "hls.js";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 export default function NetShortWatchPage() {
   const params = useParams<{ shortPlayId: string }>();
@@ -13,18 +14,21 @@ export default function NetShortWatchPage() {
   const shortPlayId = params.shortPlayId;
   const router = useRouter();
   
-  const [currentEpisode, setCurrentEpisode] = useState(1);
+  // Read token from URL query param ?t=
+  const urlToken = searchParams.get("t") || "";
+  const [currentToken, setCurrentToken] = useState(urlToken);
+  const session = getWatchSession(currentToken);
+  const [currentEpisode, setCurrentEpisode] = useState(session?.episodeNumber || 1);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
-  // Get episode from URL
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    const ep = searchParams.get("ep");
-    if (ep) {
-      setCurrentEpisode(parseInt(ep) || 1);
+    if (!session && urlToken) {
+      router.replace(`/detail/netshort/${shortPlayId}`);
     }
-  }, [searchParams]);
+  }, [session, urlToken, shortPlayId, router]);
 
   // Fetch detail for metadata (title, totalEpisodes, episode list for drawer)
   const { data: detailData, isLoading: detailLoading } = useNetShortDetail(shortPlayId || "");
@@ -48,9 +52,11 @@ export default function NetShortWatchPage() {
     const nextEp = currentEpisode + 1;
     if (nextEp <= totalEpisodes) {
       setCurrentEpisode(nextEp);
-      window.history.replaceState(null, '', `/watch/netshort/${shortPlayId}?ep=${nextEp}`);
+      const newToken = updateWatchSession(currentToken, { episodeNumber: nextEp });
+      setCurrentToken(newToken);
+      window.history.replaceState(null, '', `/watch/netshort/${shortPlayId}?t=${newToken}`);
     }
-  }, [currentEpisode, totalEpisodes, shortPlayId]);
+  }, [currentEpisode, totalEpisodes, shortPlayId, currentToken]);
 
   // Load video with fallback support for MP4/HLS
   useEffect(() => {
@@ -116,7 +122,9 @@ export default function NetShortWatchPage() {
 
   const goToEpisode = (ep: number) => {
     setCurrentEpisode(ep);
-    router.replace(`/watch/netshort/${shortPlayId}?ep=${ep}`, { scroll: false });
+    const newToken = updateWatchSession(currentToken, { episodeNumber: ep });
+    setCurrentToken(newToken);
+    router.replace(`/watch/netshort/${shortPlayId}?t=${newToken}`, { scroll: false });
     setShowEpisodeList(false);
   };
 

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { optimizeBg, optimizePoster } from "@/lib/image-utils";
+import { createWatchToken } from "@/lib/watch-session";
 
 export default function NetShortDetailPage() {
   const params = useParams<{ shortPlayId: string }>();
@@ -65,13 +66,16 @@ export default function NetShortDetailPage() {
                 className="w-full max-w-[300px] mx-auto rounded-2xl shadow-2xl"
               />
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
-                <Link
-                  href={`/watch/netshort/${data.shortPlayId}?ep=1`}
+                <button
+                  onClick={() => {
+                    const token = createWatchToken({ platform: 'netshort', bookId: data.shortPlayId, episodeNumber: 1 });
+                    router.push(`/watch/netshort/${data.shortPlayId}?t=${token}`);
+                  }}
                   className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   Tonton Sekarang
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -116,14 +120,17 @@ export default function NetShortDetailPage() {
               </div>
 
               {/* Watch Button */}
-              <Link
-                href={`/watch/netshort/${data.shortPlayId}?ep=1`}
+              <button
+                onClick={() => {
+                  const token = createWatchToken({ platform: 'netshort', bookId: data.shortPlayId, episodeNumber: 1 });
+                  router.push(`/watch/netshort/${data.shortPlayId}?t=${token}`);
+                }}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-primary-foreground transition-all hover:scale-105 shadow-lg"
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Play className="w-5 h-5 fill-current" />
                 Mulai Menonton
-              </Link>
+              </button>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UnifiedErrorDisplay } from "@/components/UnifiedErrorDisplay";
 import { optimizeBg, optimizePoster } from "@/lib/image-utils";
+import { createWatchToken } from "@/lib/watch-session";
 
 export default function FreeReelsDetailPage() {
   const params = useParams();
@@ -73,13 +74,16 @@ export default function FreeReelsDetailPage() {
               />
               {/* Overlay Play Button on Cover */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
-                <Link
-                  href={`/watch/freereels/${bookId}?ep=1`}
+                <button
+                  onClick={() => {
+                    const token = createWatchToken({ platform: 'freereels', bookId, episodeNumber: 1 });
+                    router.push(`/watch/freereels/${bookId}?t=${token}`);
+                  }}
                   className="px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   Tonton Sekarang
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -121,14 +125,17 @@ export default function FreeReelsDetailPage() {
               </div>
 
               {/* Watch Button */}
-              <Link
-                  href={`/watch/freereels/${bookId}?ep=1`}
+              <button
+                  onClick={() => {
+                    const token = createWatchToken({ platform: 'freereels', bookId, episodeNumber: 1 });
+                    router.push(`/watch/freereels/${bookId}?t=${token}`);
+                  }}
                   className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-white transition-all hover:scale-105 shadow-lg"
                   style={{ background: "var(--gradient-primary)" }}
               >
                   <Play className="w-5 h-5 fill-current" />
                   Mulai Menonton
-              </Link>
+              </button>
             </div>
           </div>
         </div>

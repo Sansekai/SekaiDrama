@@ -6,18 +6,29 @@ import { useFreeReelsDetail } from "@/hooks/useFreeReels";
 import { ChevronLeft, ChevronRight, Loader2, List, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 export default function FreeReelsWatchPage() {
   const params = useParams();
   const router = useRouter();
   const bookId = params.bookId as string;
-  // Use params directly as source of truth
-  const activeEpisodeId = params.episodeId as string;
+  
+  // params.episodeId is now a random token
+  const [currentToken, setCurrentToken] = useState(params.episodeId as string || "");
+  const session = getWatchSession(currentToken);
+  const activeEpisodeId = session?.episodeId || "";
   
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [videoQuality, setVideoQuality] = useState<'h264' | 'h265'>('h264');
-  const [useProxy, setUseProxy] = useState(true); // Default to true to avoid CORS issues
+  const [useProxy, setUseProxy] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Redirect if no valid session (direct URL access)
+  useEffect(() => {
+    if (!session && params.episodeId) {
+      router.replace(`/detail/freereels/${bookId}`);
+    }
+  }, [session, params.episodeId, bookId, router]);
 
   const { data, isLoading, error } = useFreeReelsDetail(bookId);
 
@@ -49,14 +60,15 @@ export default function FreeReelsWatchPage() {
   const handleEpisodeChange = (episodeId: string, preserveFullscreen = false) => {
     if (episodeId === activeEpisodeId) return; 
     
-    // Only reset transient UI states
     setShowEpisodeList(false);
 
-    // Update URL - this will trigger re-render with new params
+    const newToken = updateWatchSession(currentToken, { episodeId });
+    setCurrentToken(newToken);
+
     if (preserveFullscreen) {
-      window.history.replaceState(null, "", `/watch/freereels/${bookId}/${episodeId}`);
+      window.history.replaceState(null, "", `/watch/freereels/${bookId}/${newToken}`);
     } else {
-      router.push(`/watch/freereels/${bookId}/${episodeId}`);
+      router.push(`/watch/freereels/${bookId}/${newToken}`);
     }
   };
 

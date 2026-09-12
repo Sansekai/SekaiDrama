@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 export default function ShortMaxWatchPage() {
   const params = useParams<{ shortPlayId: string }>();
@@ -19,19 +20,22 @@ export default function ShortMaxWatchPage() {
   const shortPlayId = params.shortPlayId;
   const router = useRouter();
   
-  const [currentEpisode, setCurrentEpisode] = useState(1);
+  // Read token from URL query param ?t=
+  const urlToken = searchParams.get("t") || "";
+  const [currentToken, setCurrentToken] = useState(urlToken);
+  const session = getWatchSession(currentToken);
+  const [currentEpisode, setCurrentEpisode] = useState(session?.episodeNumber || 1);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState<string>("720");
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
-  // Get episode from URL
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    const ep = searchParams.get("ep");
-    if (ep) {
-      setCurrentEpisode(parseInt(ep) || 1);
+    if (!session && urlToken) {
+      router.replace(`/detail/shortmax/${shortPlayId}`);
     }
-  }, [searchParams]);
+  }, [session, urlToken, shortPlayId, router]);
 
   // Fetch detail for total episodes count and title
   const { data: detailData } = useShortMaxDetail(shortPlayId || "");
@@ -71,9 +75,11 @@ export default function ShortMaxWatchPage() {
     const nextEp = currentEpisode + 1;
     if (nextEp <= totalEpisodes) {
       setCurrentEpisode(nextEp);
-      window.history.replaceState(null, '', `/watch/shortmax/${shortPlayId}?ep=${nextEp}`);
+      const newToken = updateWatchSession(currentToken, { episodeNumber: nextEp });
+      setCurrentToken(newToken);
+      window.history.replaceState(null, '', `/watch/shortmax/${shortPlayId}?t=${newToken}`);
     }
-  }, [currentEpisode, totalEpisodes, shortPlayId]);
+  }, [currentEpisode, totalEpisodes, shortPlayId, currentToken]);
 
   // Load video with HLS.js
   useEffect(() => {
@@ -130,7 +136,9 @@ export default function ShortMaxWatchPage() {
 
   const goToEpisode = (ep: number) => {
     setCurrentEpisode(ep);
-    router.replace(`/watch/shortmax/${shortPlayId}?ep=${ep}`, { scroll: false });
+    const newToken = updateWatchSession(currentToken, { episodeNumber: ep });
+    setCurrentToken(newToken);
+    router.replace(`/watch/shortmax/${shortPlayId}?t=${newToken}`, { scroll: false });
     setShowEpisodeList(false);
   };
 

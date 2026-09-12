@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 interface VideoQuality {
   name: string;
@@ -25,15 +26,19 @@ export default function MeloloWatchPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [userSelectedQualityName, setUserSelectedQualityName] = useState<string | null>(null);
   
-  // Internal state for videoId to prevent page unmount/remount on navigation
-  const [currentVideoId, setCurrentVideoId] = useState(params.videoId || "");
+  // params.videoId is now a random token, not the real video ID
+  const [currentToken, setCurrentToken] = useState(params.videoId || "");
+  
+  // Resolve real videoId from session token
+  const session = getWatchSession(currentToken);
+  const [currentVideoId, setCurrentVideoId] = useState(session?.episodeId || "");
 
-  // Sync state with params if they change externally (e.g. back button)
+  // Redirect to detail page if no valid session (direct URL access)
   useEffect(() => {
-    if (params.videoId && params.videoId !== currentVideoId) {
-      setCurrentVideoId(params.videoId);
+    if (!session && params.videoId) {
+      router.replace(`/detail/melolo/${params.bookId}`);
     }
-  }, [params.videoId]);
+  }, [session, params.videoId, params.bookId, router]);
 
   // Keep previous data to avoid unmounting video during transitions
   const { data: detailData, isLoading: detailLoading } = useMeloloDetail(params.bookId || "");
@@ -167,11 +172,13 @@ export default function MeloloWatchPage() {
     if (!drama?.video_list?.[index]) return;
     const nextVideoId = drama.video_list[index].vid;
     
-    // Update internal state
+    // Update internal state with REAL videoId for API calls
     setCurrentVideoId(nextVideoId);
     
-    // Update URL without triggering navigation
-    const newUrl = `/watch/melolo/${params.bookId}/${nextVideoId}`;
+    // Update session token and URL with NEW random token
+    const newToken = updateWatchSession(currentToken, { episodeId: nextVideoId });
+    setCurrentToken(newToken);
+    const newUrl = `/watch/melolo/${params.bookId}/${newToken}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
     
     setShowEpisodeList(false);

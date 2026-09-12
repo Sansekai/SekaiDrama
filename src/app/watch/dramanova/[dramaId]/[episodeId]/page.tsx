@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 interface VideoQuality {
   name: string;
@@ -24,15 +25,17 @@ export default function DramaNovaWatchPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [selectedQuality, setSelectedQuality] = useState<VideoQuality | null>(null);
   
-  // Internal state for episodeId to prevent page unmount/remount on navigation
-  const [currentEpisodeId, setCurrentEpisodeId] = useState(params.episodeId || "");
+  // params.episodeId is now a random token
+  const [currentToken, setCurrentToken] = useState(params.episodeId || "");
+  const session = getWatchSession(currentToken);
+  const [currentEpisodeId, setCurrentEpisodeId] = useState(session?.episodeId || "");
 
-  // Sync state with params if they change externally (e.g. back button)
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    if (params.episodeId && params.episodeId !== currentEpisodeId) {
-      setCurrentEpisodeId(params.episodeId);
+    if (!session && params.episodeId) {
+      router.replace(`/detail/dramanova/${params.dramaId}`);
     }
-  }, [params.episodeId]);
+  }, [session, params.episodeId, params.dramaId, router]);
 
   // Keep previous data to avoid unmounting video during transitions
   // detailData returns { data: DramaNovaDetailData } structure wrapped from response
@@ -105,11 +108,11 @@ export default function DramaNovaWatchPage() {
     if (!dramaDetail?.episodes?.[index]) return;
     const nextEpisodeId = dramaDetail.episodes[index].id;
     
-    // Update internal state
     setCurrentEpisodeId(nextEpisodeId);
     
-    // Update URL without triggering navigation
-    const newUrl = `/watch/dramanova/${params.dramaId}/${nextEpisodeId}`;
+    const newToken = updateWatchSession(currentToken, { episodeId: nextEpisodeId });
+    setCurrentToken(newToken);
+    const newUrl = `/watch/dramanova/${params.dramaId}/${newToken}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
     
     setShowEpisodeList(false);

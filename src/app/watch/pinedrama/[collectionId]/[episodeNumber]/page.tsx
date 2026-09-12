@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { usePineDramaDetail, usePineDramaEpisode } from "@/hooks/usePineDrama";
 import { ChevronLeft, ChevronRight, Loader2, List, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 export default function PineDramaWatchPage() {
   const params = useParams<{ collectionId: string; episodeNumber: string }>();
@@ -16,19 +17,17 @@ export default function PineDramaWatchPage() {
 
   const collectionId = params.collectionId || "";
 
-  // Episode number from URL (1-based)
-  const [currentEpisode, setCurrentEpisode] = useState(() => {
-    const ep = parseInt(params.episodeNumber || "1", 10);
-    return isNaN(ep) ? 1 : Math.max(1, ep);
-  });
+  // params.episodeNumber is now a random token
+  const [currentToken, setCurrentToken] = useState(params.episodeNumber || "");
+  const session = getWatchSession(currentToken);
+  const [currentEpisode, setCurrentEpisode] = useState(session?.episodeNumber || 1);
 
-  // Sync with URL params
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    const ep = parseInt(params.episodeNumber || "1", 10);
-    if (!isNaN(ep) && ep !== currentEpisode) {
-      setCurrentEpisode(Math.max(1, ep));
+    if (!session && params.episodeNumber) {
+      router.replace(`/detail/pinedrama/${collectionId}`);
     }
-  }, [params.episodeNumber]);
+  }, [session, params.episodeNumber, collectionId, router]);
 
   // Fetch detail for total episodes + title
   const { data: detailData } = usePineDramaDetail(collectionId);
@@ -94,8 +93,9 @@ export default function PineDramaWatchPage() {
 
     setCurrentEpisode(ep);
 
-    // Update URL without full navigation
-    const newUrl = `/watch/pinedrama/${collectionId}/${ep}`;
+    const newToken = updateWatchSession(currentToken, { episodeNumber: ep });
+    setCurrentToken(newToken);
+    const newUrl = `/watch/pinedrama/${collectionId}/${newToken}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
 
     setShowEpisodeList(false);

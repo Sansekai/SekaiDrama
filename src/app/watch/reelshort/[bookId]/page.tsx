@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 interface VideoItem {
   url: string;
@@ -71,6 +72,7 @@ export default function ReelShortWatchPage() {
   const router = useRouter();
   
   const [currentEpisode, setCurrentEpisode] = useState(1);
+  const [currentToken, setCurrentToken] = useState("");
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState<string>("auto");
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -78,11 +80,21 @@ export default function ReelShortWatchPage() {
 
   // Get episode from URL
   useEffect(() => {
-    const ep = searchParams.get("ep");
-    if (ep) {
-      setCurrentEpisode(parseInt(ep) || 1);
+    const token = searchParams.get("t");
+    if (!token) {
+      router.replace(`/detail/reelshort/${bookId}`);
+      return;
     }
-  }, [searchParams]);
+    
+    const session = getWatchSession(token);
+    if (!session || session.episodeNumber === undefined) {
+      router.replace(`/detail/reelshort/${bookId}`);
+      return;
+    }
+    
+    setCurrentToken(token);
+    setCurrentEpisode(session.episodeNumber);
+  }, [searchParams, bookId, router]);
 
   // Fetch detail for title and episode count
   const { data: detailData } = useQuery({
@@ -176,16 +188,21 @@ export default function ReelShortWatchPage() {
   // Handle video ended - auto next episode
   const handleVideoEnded = useCallback(() => {
     const totalEpisodes = detailData?.totalEpisodes || 1;
-    if (currentEpisode < totalEpisodes) {
+    if (currentEpisode < totalEpisodes && currentToken) {
       const nextEp = currentEpisode + 1;
       setCurrentEpisode(nextEp);
-      window.history.replaceState(null, '', `/watch/reelshort/${bookId}?ep=${nextEp}`);
+      const newToken = updateWatchSession(currentToken, { episodeNumber: nextEp });
+      setCurrentToken(newToken);
+      window.history.replaceState(null, '', `/watch/reelshort/${bookId}?t=${newToken}`);
     }
-  }, [currentEpisode, detailData?.totalEpisodes, bookId]);
+  }, [currentEpisode, detailData?.totalEpisodes, bookId, currentToken]);
 
   const goToEpisode = (ep: number) => {
+    if (!currentToken) return;
     setCurrentEpisode(ep);
-    router.replace(`/watch/reelshort/${bookId}?ep=${ep}`, { scroll: false });
+    const newToken = updateWatchSession(currentToken, { episodeNumber: ep });
+    setCurrentToken(newToken);
+    router.replace(`/watch/reelshort/${bookId}?t=${newToken}`, { scroll: false });
     setShowEpisodeList(false);
   };
 

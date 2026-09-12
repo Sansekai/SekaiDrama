@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { DramaDetailDirect, DramaDetailResponseLegacy } from "@/types/drama";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 // Helper to check if response is new format
 function isDirectFormat(data: unknown): data is DramaDetailDirect {
@@ -29,6 +30,7 @@ export default function DramaBoxWatchPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [currentEpisode, setCurrentEpisode] = useState(0);
+  const [currentToken, setCurrentToken] = useState("");
   const [quality, setQuality] = useState(720);
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -38,20 +40,33 @@ export default function DramaBoxWatchPage() {
 
   // Initialize from URL params
   useEffect(() => {
-    const ep = parseInt(searchParams.get("ep") || "0", 10);
-    if (ep >= 0) {
-      setCurrentEpisode(ep);
+    const token = searchParams.get("t");
+    if (!token) {
+      router.replace(`/detail/dramabox/${bookId}`);
+      return;
     }
-  }, [searchParams]);
+    
+    const session = getWatchSession(token);
+    if (!session || session.episodeIndex === undefined) {
+      router.replace(`/detail/dramabox/${bookId}`);
+      return;
+    }
+    
+    setCurrentToken(token);
+    setCurrentEpisode(session.episodeIndex);
+  }, [searchParams, bookId, router]);
 
   // Update URL when episode changes (for manual navigation)
   const handleEpisodeChange = (index: number, preserveFullscreen = false) => {
+    if (!currentToken) return;
     setCurrentEpisode(index);
     setShowEpisodeList(false);
+    const newToken = updateWatchSession(currentToken, { episodeIndex: index });
+    setCurrentToken(newToken);
     if (preserveFullscreen) {
-      window.history.replaceState(null, '', `/watch/dramabox/${bookId}?ep=${index}`);
+      window.history.replaceState(null, '', `/watch/dramabox/${bookId}?t=${newToken}`);
     } else {
-      router.push(`/watch/dramabox/${bookId}?ep=${index}`);
+      router.push(`/watch/dramabox/${bookId}?t=${newToken}`);
     }
   };
 

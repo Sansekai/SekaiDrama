@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Loader2, List, AlertCircle } from "lucide-re
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Hls from "hls.js";
+import { getWatchSession, updateWatchSession } from "@/lib/watch-session";
 
 export default function FreeReelsWatchPage() {
   const params = useParams();
@@ -14,28 +15,29 @@ export default function FreeReelsWatchPage() {
   const router = useRouter();
   const bookId = params.bookId as string;
   
-  // State synced with URL search param 'ep'
-  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0); 
+  // Read token from URL query param ?t=
+  const urlToken = searchParams.get("t") || "";
+  const [currentToken, setCurrentToken] = useState(urlToken);
+  const session = getWatchSession(currentToken);
+  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(() => {
+    const ep = session?.episodeNumber || 1;
+    return Math.max(0, ep - 1); // 1-based to 0-based
+  });
   const [showEpisodeList, setShowEpisodeList] = useState(false);
   const [videoQuality, setVideoQuality] = useState<'h264' | 'h265'>('h264');
-  const [useProxy, setUseProxy] = useState(true); // Default to true to avoid CORS issues
+  const [useProxy, setUseProxy] = useState(true);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
 
   const { data, isLoading, error } = useFreeReelsDetail(bookId);
 
-  // Sync state from URL params
+  // Redirect if no valid session (direct URL access)
   useEffect(() => {
-    const epParam = searchParams.get("ep");
-    if (epParam) {
-      const epIndex = parseInt(epParam, 10) - 1; // URL is 1-based, internal is 0-based
-      if (!isNaN(epIndex) && epIndex >= 0) {
-        setCurrentEpisodeIndex(epIndex);
-        // setUseProxy(false); // REMOVED: Keep proxy active
-      }
+    if (!session && urlToken) {
+      router.replace(`/detail/freereels/${bookId}`);
     }
-  }, [searchParams]);
+  }, [session, urlToken, bookId, router]);
 
   // Derived state
   const drama = data?.data;
@@ -259,27 +261,23 @@ export default function FreeReelsWatchPage() {
   const handleEpisodeChange = (index: number) => {
     if (index === currentEpisodeIndex) return;
     
-    // Updates URL, which triggers the useEffect above
-    const nextEp = index + 1;
     setShowEpisodeList(false);
-    
-    // Use replace for smoother history, or push? Usually push for navigation.
-    // Netshort uses replace for next episode, but buttons usually push.
-    // Let's use push to allow back button to work.
-    // Verify data in console
-    console.log("Current Ep Data:", currentEpisodeData);
-    console.log("Proxied Subtitle URL:", proxiedSubtitleUrl);
-    console.log("Original Audio:", currentEpisodeData?.originalAudioLanguage);
+    setCurrentEpisodeIndex(index);
 
-    router.push(`/watch/freereels/${bookId}?ep=${nextEp}`);
+    const nextEp = index + 1;
+    const newToken = updateWatchSession(currentToken, { episodeNumber: nextEp });
+    setCurrentToken(newToken);
+    router.push(`/watch/freereels/${bookId}?t=${newToken}`);
   };
 
   const handleVideoEnded = () => {
     const nextIndex = currentEpisodeIndex + 1;
     if (nextIndex < totalEpisodes) {
-       // Auto-advance
        const nextEp = nextIndex + 1;
-       router.replace(`/watch/freereels/${bookId}?ep=${nextEp}`); // Replace for auto-advance
+       setCurrentEpisodeIndex(nextIndex);
+       const newToken = updateWatchSession(currentToken, { episodeNumber: nextEp });
+       setCurrentToken(newToken);
+       router.replace(`/watch/freereels/${bookId}?t=${newToken}`);
     }
   };
 
