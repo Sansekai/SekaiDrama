@@ -12,9 +12,9 @@ export function decryptData<T>(ciphertext: string): T {
   try {
     const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
     const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-    
+
     if (!decryptedString) {
-        throw new Error("Decryption failed: Empty result");
+      throw new Error("Decryption failed: Empty result");
     }
 
     return JSON.parse(decryptedString);
