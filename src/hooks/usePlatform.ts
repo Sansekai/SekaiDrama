@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export type Platform = "pinedrama" | "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova" | "goodshort";
+export type Platform = "pinedrama" | "dramabox" | "reelshort" | "shortmax" | "netshort" | "melolo" | "freereels" | "dramanova" | "goodshort" | "flickreels";
 
 export interface PlatformInfo {
   id: Platform;
@@ -62,6 +62,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/freereels.webp",
     apiBase: "/api/freereels",
   },
+  {
+    id: "flickreels",
+    name: "FlickReels",
+    logo: "/flickreels.webp",
+    apiBase: "/api/flickreels",
+  },
   // api lagi error - 12-09-2026
   // {
   //   id: "dramanova",
@@ -111,5 +117,6 @@ export function usePlatform() {
     isFreeReels: currentPlatform === "freereels",
     isDramaNova: currentPlatform === "dramanova",
     isGoodShort: currentPlatform === "goodshort",
+    isFlickReels: currentPlatform === "flickreels",
   };
 }

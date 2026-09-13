@@ -10,13 +10,14 @@ import { MeloloHome } from "@/components/MeloloHome";
 import { FreeReelsHome } from "@/components/FreeReelsHome";
 import { DramaNovaHome } from "@/components/DramaNovaHome";
 import { GoodShortHome } from "@/components/GoodShortHome";
+import { FlickReelsHome } from "@/components/FlickReelsHome";
 import { PineDramaHome } from "@/components/PineDramaHome";
 import { useLatestDramas, useTrendingDramas, useDubindoDramas } from "@/hooks/useDramas";
 import { usePlatform } from "@/hooks/usePlatform";
 import { InfiniteDramaSection } from "@/components/InfiniteDramaSection";
 
 export default function HomeContent() {
-  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort } = usePlatform();
+  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, isFlickReels } = usePlatform();
 
   // Fetch data for all DramaBox sections
   // const { data: popularDramas, isLoading: loadingPopular, error: errorPopular, refetch: refetchPopular } = useForYouDramas(); // REMOVED as requested (replaced by infinite scroll)
@@ -112,6 +113,13 @@ export default function HomeContent() {
       {isGoodShort && (
         <div className="container mx-auto px-4 py-6 space-y-8">
           <GoodShortHome />
+        </div>
+      )}
+
+      {/* FlickReels Content */}
+      {isFlickReels && (
+        <div className="container mx-auto px-4 py-6 space-y-8">
+          <FlickReelsHome />
         </div>
       )}
     </main>

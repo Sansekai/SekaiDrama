@@ -14,6 +14,7 @@ import { useFreeReelsSearch } from "@/hooks/useFreeReels";
 import { useDramaNovaSearch } from "@/hooks/useDramaNova";
 import { useGoodShortSearch } from "@/hooks/useGoodShort";
 import { usePineDramaSearch } from "@/hooks/usePineDrama";
+import { useFlickReelsSearch } from "@/hooks/useFlickReels";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePathname } from "next/navigation";
@@ -28,7 +29,7 @@ export function Header() {
   const normalizedQuery = debouncedQuery.trim();
 
   // Platform context
-  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, platformInfo, platforms, setPlatform } = usePlatform();
+  const { isPineDrama, isDramaBox, isReelShort, isShortMax, isNetShort, isMelolo, isFreeReels, isDramaNova, isGoodShort, isFlickReels, platformInfo, platforms, setPlatform } = usePlatform();
 
   // Search based on platform
   const { data: dramaBoxResults, isLoading: isSearchingDramaBox } = useSearchDramas(
@@ -63,6 +64,10 @@ export function Header() {
     isPineDrama ? normalizedQuery : ""
   );
 
+  const { data: flickReelsResults, isLoading: isSearchingFlickReels } = useFlickReelsSearch(
+    isFlickReels ? normalizedQuery : ""
+  );
+
   const isSearching = isPineDrama
     ? isSearchingPineDrama
     : isDramaBox 
@@ -79,7 +84,9 @@ export function Header() {
                   ? isSearchingFreeReels
                   : isDramaNova
                     ? isSearchingDramaNova
-                    : isSearchingGoodShort;
+                    : isGoodShort
+                      ? isSearchingGoodShort
+                      : isSearchingFlickReels;
 
   // Search results processing
   const searchResults = isPineDrama
@@ -99,9 +106,11 @@ export function Header() {
                 ? freeReelsResults
                 : isDramaNova
                   ? dramaNovaResults
-                  : isGoodShort
+                   : isGoodShort
                     ? goodShortResults
-                    : [];
+                    : isFlickReels
+                      ? flickReelsResults?.data
+                      : [];
 
   const handleSearchClose = () => {
     setSearchOpen(false);
@@ -574,6 +583,46 @@ export function Header() {
                               {drama.tags.slice(0, 3).map((tag: string, idx: number) => (
                                 <span key={idx} className="tag-pill text-[10px]">
                                   {tag.replace(/<\/?em>/g, "")}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* FlickReels Results */}
+                {isFlickReels && searchResults && searchResults.length > 0 && (
+                  <div className="grid gap-3">
+                    {searchResults.map((drama: any, index: number) => (
+                      <Link
+                        key={`${drama.playletId}-${index}`}
+                        href={`/detail/flickreels/${drama.playletId}`}
+                        onClick={handleSearchClose}
+                        className="flex gap-4 p-4 rounded-2xl bg-card hover:bg-muted transition-all text-left animate-fade-up overflow-hidden"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <img
+                          src={optimizeThumb(drama.cover)}
+                          alt={drama.title}
+                          className="w-16 h-24 object-cover rounded-xl flex-shrink-0"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display font-semibold text-foreground truncate">{drama.title}</h3>
+                          {drama.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                              {drama.description}
+                            </p>
+                          )}
+                          {drama.tags && drama.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {drama.tags.slice(0, 3).map((tag: string, idx: number) => (
+                                <span key={idx} className="tag-pill text-[10px]">
+                                  {tag}
                                 </span>
                               ))}
                             </div>
