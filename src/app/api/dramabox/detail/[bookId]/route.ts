@@ -16,7 +16,7 @@ export async function GET(
 
   // If API fetch -> proxy to upstream
   try {
-    const response = await fetch(`${UPSTREAM_API}/detail?bookId=${bookId}`, {
+    const response = await fetch(`${UPSTREAM_API}/details?bookId=${bookId}`, {
       cache: 'no-store',
     });
 

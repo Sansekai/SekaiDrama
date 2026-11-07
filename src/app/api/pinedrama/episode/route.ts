@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const targetUrl = new URL(`${UPSTREAM_API}/pinedrama/get-episode`);
+    const targetUrl = new URL(`${UPSTREAM_API}/pinedrama/get-episodes`);
     targetUrl.searchParams.set("collection_id", collectionId);
     targetUrl.searchParams.set("episodeNumber", episodeNumber);
 

@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Build the upstream decrypt-video URL
-    const upstreamUrl = `${UPSTREAM_API}/decrypt-video?url=${encodeURIComponent(encryptedUrl)}`;
+    const upstreamUrl = `${UPSTREAM_API}/decrypt-videos?url=${encodeURIComponent(encryptedUrl)}`;
 
     const range = request.headers.get("range");
     const headers: Record<string, string> = {

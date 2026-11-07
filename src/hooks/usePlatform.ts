@@ -36,12 +36,12 @@ export const PLATFORMS: PlatformInfo[] = [
     logo: "/shortmax.webp",
     apiBase: "/api/shortmax",
   },
-  {
-    id: "goodshort",
-    name: "GoodShort",
-    logo: "/goodshort.jpg",
-    apiBase: "/api/goodshort",
-  },
+  // {
+  //   id: "goodshort",
+  //   name: "GoodShort",
+  //   logo: "/goodshort.jpg",
+  //   apiBase: "/api/goodshort",
+  // },
   {
     id: "netshort",
     name: "NetShort",
